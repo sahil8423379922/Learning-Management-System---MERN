@@ -1,0 +1,25 @@
+{
+  "name": "node-and-mongo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "hbs": "^4.2.0",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
