@@ -29,7 +29,7 @@
       <div class="row">
         <div class="col-8">
           <div class="card-body">
-            {{this}}
+          <button class="list-group-item" type="submit" data-module="{{this}}">{{this}}</button>
           </div>
         </div>
         <div class="col-2">
@@ -38,9 +38,20 @@
             <button class="btn btn-success openPopupBtn" type="button" data-module="{{this}}">Update</button>
           </div>
         </div>
+
         <div class="col-2">
           <div class="d-grid gap-2">
-            <button class="btn btn-danger" type="button">Delete</button>
+            <!-- Passing data using data-module attribute -->
+            <button class="btn btn-danger deletePopupBtn" type="button" data-module="{{this}}">Delete</button>
+          </div>
+        </div>
+
+        <div class="col-2">
+          <div class="d-grid gap-2">
+            <form id="myForm" action="/addsubmodule" method="POST">
+        <input type="hidden" name="data">
+      
+    </form>
           </div>
         </div>
       </div>
@@ -48,7 +59,7 @@
     {{/each}}
   </div>
 
-  <!-- Bootstrap Modal -->
+  <!-- Bootstrap Modal to update-->
   <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -79,18 +90,67 @@
     </div>
   </div>
 
+
+<!-- Bootstrap Modal to Delete-->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Delete Module</h5>
+          
+        </div>
+        <form action="/deletemodal" method="POST">
+          <div class="mx-3 mt-2">
+            <!-- Displaying data received from module -->
+              <input type="text" class="form-control mb-2" id="data" name="data" aria-describedby="emailHelp"
+            name="data">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-secondary" >Delete
+              
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
+    //Java Script to open popup for update
     $(document).ready(function () {
       $('.openPopupBtn').click(function () {
-        // Retrieve the data-module attribute value
         var moduleData = $(this).data('module');
-        // Set the value of the input field in the modal
         $('#moduleData').val(moduleData);
         $('#previousmoduledata').val(moduleData);
-        // Show the modal
         $('#exampleModal').modal('show');
       });
     });
+
+//Java Script to open pop up for delete
+     $(document).ready(function () {
+      $('.deletePopupBtn').click(function () {
+        var moduleData = $(this).data('module');
+        $('#data').val(moduleData);
+        $('#deleteModal').modal('show');
+      });
+    });
+
+
+ $(document).ready(function() {
+            $('.list-group-item').click(function() {
+                // Retrieve the data from the data-module attribute of the clicked element
+                var dataToSend = $(this).data('module');
+                
+                // Log the received data to the console
+                console.log("Data Received on button click: " + dataToSend);
+
+                // Set the value of the input field with name 'data' to the received data
+                $('input[name="data"]').val(dataToSend);
+
+                // Submit the form with id 'myForm'
+                $('#myForm').submit();
+            });
+        });
   </script>
 </body>
 </html>
