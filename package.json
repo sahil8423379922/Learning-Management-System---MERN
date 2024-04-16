@@ -3,6 +3,7 @@
     "bootstrap": "^5.3.3",
     "react-bootstrap": "^2.10.2",
     "react-documents": "^1.2.1",
+    "react-player": "^2.16.0",
     "react-shimmer-effects": "^1.0.3"
   }
 }
