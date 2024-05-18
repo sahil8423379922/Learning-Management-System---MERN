@@ -1,5 +1,6 @@
 const express = require('express')
 const bcrypt = require("bcryptjs")
+const cors = require('cors');
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const path = require('path');
@@ -7,11 +8,16 @@ const mclient=require('./MongoClient')
 const loginmodule=require('./auth/login')
 const regitermodule = require('./auth/signin')
 const loginauth =require('./Loginauth')
+const authreq =require('./Authreq')
 const addmodule = require('./Operations/AddModule')
 const updatemodule= require('./Operations/UpdateModule')
 const deletemodule =require('./Operations/DeleteModals')
 const createsubmodule = require('./Operations/CreateSubModule')
 const fetchallmodule=require('./Operations/FetchSubModules')
+const session = require('express-session');
+const crypto = require('crypto');
+const generateSecretKey =require('./SecretKey')
+const cookieParser = require('cookie-parser');
 
 
 
@@ -19,8 +25,10 @@ const fetchallmodule=require('./Operations/FetchSubModules')
 
 const app = express()
 
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cors()); // Enable CORS
 
 var loginstatus = false;
 app.use(function(req, res, next) {
@@ -31,7 +39,14 @@ app.use(function(req, res, next) {
     next();
   });
 
+  // //Calling auth request mtd
+  // const data =authreq.authreq(app)
+
   app.set('view engine', 'hbs')
+
+  // const generateSecretKey = () => {
+  //   return crypto.randomBytes(64).toString('hex');
+  // };
 
   app.get("/", (req, res) => {
     if(loginstatus)
@@ -42,7 +57,14 @@ app.use(function(req, res, next) {
         res.render("login")
     }
    
+   
   })
+
+ 
+
+
+
+
 
   app.get("/register", (req, res) => {
     res.render("register")
@@ -209,6 +231,8 @@ res.render('dashboard')
   
     const data =await loginauth.loginauth(user,email)
     console.log(data[0]['email'])
+
+    
     
     
   
@@ -284,13 +308,88 @@ res.render('dashboard')
   })
   
 
+// Session middleware configuration
+app.use(session({
+  secret: 'your-secret-key', // Replace with your actual secret key
+  resave: false,
+  saveUninitialized: true
+}));
+
+
+app.use(cookieParser())
+
 
   
 
+
+
+
+
+const UserLMSAuth = new mongoose.Schema({
+  email: String,
+  password: String
+});
+
+//login route
+const loginmodel = mongoose.model('lmslogin', UserLMSAuth);
+app.post('/api/login', async (req, res) => {
+
+  console.log(req.body.email)
+  console.log(req.body.password)
+
+  req.session.regenerate(()=>{
+    console.log("Session ID is Regenerated")
+  })
   
+  loginmodel.findOne({ email: req.body.email, password: req.body.password })
+  .then(user => {
+    if (user) {
+      req.session.userId = user._id;
+  
+      res.json({ message: 'Login successful',key:req.session.userId });
+    } else {
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  })
+  .catch(error => {
+    console.error('Error checking login:', error);
+    res.json({ "message": "false" });
+  });
+  
+});
 
 
+app.post('/lms/logout', (req, res) => {
+  console.log('Session ID before logout:', req.session.userId);
+
+  if (req.session.userId) {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Error destroying session:', err);
+        res.status(500).json({ message: 'Logout failed' });
+      } else {
+        console.log('Session destroyed successfully');
+        res.json({ message: 'Logout successful' });
+      }
+    });
+  } else {
+    console.log('No user ID found in session');
+    res.json({ message: 'No active session to logout from' });
+  }
+});
+
+// Dashboard route
+app.get('/dashboard', (req, res) => {
+  // Check if userId is stored in session
+  if (req.session.userId) {
+    console.log("User is authorized");
+    res.json({ message: 'Welcome to the dashboard' });
+  } else {
+    console.log("User is unauthorized");
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+});
 
 app.listen(4000, (res) => {
-    console.log('Listening on port 4000')
+  console.log('Listening on port 4000')
 });
